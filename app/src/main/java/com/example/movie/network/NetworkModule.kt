@@ -15,8 +15,8 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val API_KEY = "c0e9332895177838a06cf5ad52bd3f6b"
-    private const val ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjMGU5MzMyODk1MTc3ODM4YTA2Y2Y1YWQ1MmJkM2Y2YiIsIm5iZiI6MTcwMjUzNDQwMi44ODYwMDAyLCJzdWIiOiI2NTdhOWQwMjdhM2M1MjAwYWQxYTU0YTAiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.Ij_d_jop73MDIsYMYoNwfWKqvpJJ_RUj7fKVuTGtEkE" // Hardcoded Access Token
+    private const val API_KEY = ""
+    private const val ACCESS_TOKEN = ""
     private const val BASE_URL = "https://api.themoviedb.org/3/"
 
     @Provides
