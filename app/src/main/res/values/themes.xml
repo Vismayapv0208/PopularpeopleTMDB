@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--<resources>-->
+
+<!--    <style name="Theme.Movie" parent="android:Theme.Material.Light.NoActionBar" />-->
+<!--</resources>-->
+<resources>
+<style name="MyCustomTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <!-- Your custom attributes here -->
+    <item name="colorPrimary">@color/teal_200</item>
+</style>
+</resources>
