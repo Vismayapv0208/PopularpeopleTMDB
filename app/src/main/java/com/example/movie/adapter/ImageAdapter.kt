@@ -28,7 +28,6 @@ class ImageAdapter(
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val image = images[position]
         val filePath = image.file_path
-        Log.e("ImageAdapter", "File Path: $filePath") // Log the file path here
 
         Glide.with(context)
             .load("https://image.tmdb.org/t/p/w500$filePath")

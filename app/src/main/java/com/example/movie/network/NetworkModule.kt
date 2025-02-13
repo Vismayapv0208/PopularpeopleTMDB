@@ -15,9 +15,9 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val API_KEY = "c0e9332895177838a06cf5ad52bd3f6b" // Hardcoded API Key (not required in the request anymore)
+    private const val API_KEY = "c0e9332895177838a06cf5ad52bd3f6b"
     private const val ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjMGU5MzMyODk1MTc3ODM4YTA2Y2Y1YWQ1MmJkM2Y2YiIsIm5iZiI6MTcwMjUzNDQwMi44ODYwMDAyLCJzdWIiOiI2NTdhOWQwMjdhM2M1MjAwYWQxYTU0YTAiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.Ij_d_jop73MDIsYMYoNwfWKqvpJJ_RUj7fKVuTGtEkE" // Hardcoded Access Token
-    private const val BASE_URL = "https://api.themoviedb.org/3/" // Base URL
+    private const val BASE_URL = "https://api.themoviedb.org/3/"
 
     @Provides
     fun provideBaseUrl() = BASE_URL
@@ -25,21 +25,20 @@ object NetworkModule {
     @Provides
     fun provideOkHttpClient(): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY // Log both request and response bodies
+            level = HttpLoggingInterceptor.Level.BODY
         }
 
-        // Interceptor to add Authorization Bearer token statically
         val authInterceptor = Interceptor { chain ->
             val newRequest = chain.request().newBuilder()
                 .addHeader("accept", "application/json")
-                .addHeader("Authorization", "Bearer $ACCESS_TOKEN") // Use the fixed access token in the Authorization header
+                .addHeader("Authorization", "Bearer $ACCESS_TOKEN")
                 .build()
             chain.proceed(newRequest)
         }
 
         return OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)  // Log request/response
-            .addInterceptor(authInterceptor)     // Add Authorization header with access token
+            .addInterceptor(loggingInterceptor)
+            .addInterceptor(authInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)

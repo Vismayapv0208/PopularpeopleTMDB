@@ -1,12 +1,13 @@
 package com.example.movie.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.paging.filter
 import com.example.movie.model.Person
 import com.example.movie.network.MyApiService
@@ -18,38 +19,37 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
 @HiltViewModel
-class MyViewModel @Inject constructor(private val apiService: MyApiService) : ViewModel() {
+class PersonListViewModel @Inject constructor(private val apiService: MyApiService) : ViewModel() {
 
     private val _filteredPeople = MutableStateFlow<PagingData<Person>>(PagingData.empty())
     val filteredPeople: StateFlow<PagingData<Person>> = _filteredPeople
 
-    // The entire list of people (Paging Data)
+    private val _toastMessage = MutableLiveData<String>()
+    val toastMessage: LiveData<String> get() = _toastMessage
+
     val pagingData = Pager(
         PagingConfig(pageSize = 20, enablePlaceholders = false)
     ) {
-        MyPagingSource(apiService)  // Fetch the data using the API service
+        MyPagingSource(apiService) { message ->
+            _toastMessage.postValue(message)  // Pass error message to the LiveData
+        }
     }.flow.cachedIn(viewModelScope)
 
-    // Function to show the entire list without any filtering
     fun showAllData() {
         viewModelScope.launch {
             pagingData.collectLatest { pagingData ->
-                // Log the data received
-                Log.e("API_RESPONSE", "Fetched data: ${pagingData}")  // Log the entire PagingData
-                _filteredPeople.value = pagingData // Show all data when no search is applied
+                _filteredPeople.value = pagingData
             }
         }
     }
 
-    // Function to filter the list based on search query
     fun setSearchQuery(query: String) {
         viewModelScope.launch {
             if (query.isEmpty()) {
-                // If no search query, show all data
                 showAllData()
             } else {
-                // Filter data based on query
                 pagingData
                     .map { pagingData ->
                         pagingData.filter { person ->
@@ -58,9 +58,8 @@ class MyViewModel @Inject constructor(private val apiService: MyApiService) : Vi
                         }
                     }
                     .collectLatest { filteredPagingData ->
-                        // Log the filtered data
-                        Log.e("API_RESPONSE", "Filtered data: ${filteredPagingData}")  // Log the filtered PagingData
                         _filteredPeople.value = filteredPagingData
+
                     }
             }
         }

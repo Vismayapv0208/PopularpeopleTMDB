@@ -1,7 +1,5 @@
 package com.example.movie.network
 
-import com.example.movie.model.PeopleResponse
-import com.example.movie.model.Person
 import com.example.movie.model.PersonDetailsResponse
 import com.example.movie.model.PersonImagesResponse
 import com.example.movie.model.PopularPeopleResponse

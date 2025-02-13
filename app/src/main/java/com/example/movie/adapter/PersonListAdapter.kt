@@ -1,6 +1,5 @@
 package com.example.movie.adapter
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,10 +10,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.movie.R
 import com.example.movie.model.Person
 
-class MyAdapter(private val onItemClick: (Person) -> Unit) : PagingDataAdapter<Person, MyAdapter.PersonViewHolder>(PersonComparator) {
+class PersonListAdapter(private val onItemClick: (Person) -> Unit) : PagingDataAdapter<Person, PersonListAdapter.PersonViewHolder>(PersonComparator) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PersonViewHolder {
-        // Inflate the item layout manually
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_person, parent, false)
         return PersonViewHolder(view)
     }
@@ -33,11 +31,6 @@ class MyAdapter(private val onItemClick: (Person) -> Unit) : PagingDataAdapter<P
         fun bind(person: Person) {
             nameTextView.text = person.name
             knownForTextView.text = "Known for : ${person.knownForDepartment}"
-
-            // Log the data when it's bound to the view
-            Log.e("API_RESPONSE", "Binding item: Name - ${person.name}, Known For - ${person.knownForDepartment}")
-
-            // Handle item click if needed
             itemView.setOnClickListener {
                 onItemClick(person)
 
@@ -47,7 +40,7 @@ class MyAdapter(private val onItemClick: (Person) -> Unit) : PagingDataAdapter<P
 
     object PersonComparator : DiffUtil.ItemCallback<Person>() {
         override fun areItemsTheSame(oldItem: Person, newItem: Person): Boolean {
-            return oldItem.id == newItem.id  // Assuming `id` is the unique identifier
+            return oldItem.id == newItem.id
         }
 
         override fun areContentsTheSame(oldItem: Person, newItem: Person): Boolean {

@@ -1,6 +1,7 @@
 package com.example.movie.viewmodel
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -23,20 +24,21 @@ class DetailViewModel @Inject constructor(
     private val _personDetails = MutableLiveData<PersonDetailsResponse>()
     val personDetails: LiveData<PersonDetailsResponse> get() = _personDetails
 
+    private val _toastMessage = MutableLiveData<String>()
+    val toastMessage: LiveData<String> get() = _toastMessage
+
     fun getPersonImages(personId: Int) {
         viewModelScope.launch {
             try {
                 val response = apiService.getPersonImages(personId)
                 if (response.isSuccessful) {
-                    Log.d("API_SUCCESS1", "Person images fetched successfully: ${response.body()}")
                     _personImages.value = response.body()?.profiles ?: emptyList()
                 } else {
-                    Log.e("API_ERROR1", "Failed to fetch person images: ${response.code()} - ${response.message()}")
+                    _toastMessage.value = " Error : ${response.message()}"
                 }
             } catch (e: Exception) {
-                Log.e("" +
-                        "" +
-                        "", "Error fetching person images: ${e.message}")
+                _toastMessage.value = "Error : ${e.message}"
+
             }
         }
     }
@@ -46,13 +48,15 @@ class DetailViewModel @Inject constructor(
             try {
                 val response = apiService.getPersonDetails(personId)
                 if (response.isSuccessful) {
-                    Log.d("API_SUCCESS2", "Person details fetched successfully: ${response.body()}")
                     _personDetails.value = response.body()
                 } else {
-                    Log.e("API_ERROR2", "Failed to fetch person details: ${response.code()} - ${response.body()}")
+                    Log.e("tototto",_toastMessage.value.toString())
+                    _toastMessage.value = "Error: ${response.code()} - ${response.body()}"
                 }
             } catch (e: Exception) {
-                Log.e("API_ERROR2", "Error fetching person details: ${e.message}")
+                Log.e("tototto",_toastMessage.value.toString())
+
+                _toastMessage.value = "Error : ${e.message}"
             }
         }
     }

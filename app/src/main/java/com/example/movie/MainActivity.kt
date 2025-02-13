@@ -8,7 +8,6 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
-import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -16,112 +15,93 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.movie.adapter.MyAdapter
+import com.example.movie.adapter.PersonListAdapter
 import com.example.movie.fragment.DetailFragment
-import com.example.movie.viewmodel.MyViewModel
+import com.example.movie.viewmodel.PersonListViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import dagger.hilt.android.HiltAndroidApp
+
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var networkStatusTextView: TextView
     private lateinit var searchEditText: EditText
     private lateinit var recyclerView: RecyclerView
-    private lateinit var myAdapter: MyAdapter
+    private lateinit var personListAdapter: PersonListAdapter
     private lateinit var searchLayout: LinearLayout
-    private val viewModel: MyViewModel by viewModels()
+    private val viewModel: PersonListViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize views
         networkStatusTextView = findViewById(R.id.networkStatusTextView)
         searchEditText = findViewById(R.id.searchEditText)
         recyclerView = findViewById(R.id.recyclerView)
         searchLayout= findViewById(R.id.searchLayout)
-        // Set up RecyclerView with the adapter and layout manager
         setupRecyclerView()
 
-        // Check network availability
         checkNetworkAndShowMessage()
 
-        // Observe data changes (filtered list from ViewModel)
         observeData()
 
-        // Set up search button click listener
         setupSearch()
 
-        // Initially show all data
         viewModel.showAllData()
+
+        observeToastMessages()
     }
 
-//    private fun setupRecyclerView() {
-//        myAdapter = MyAdapter { person -> // Handle item click
-//            Toast.makeText(this, "Clicked on: ${person.name}", Toast.LENGTH_SHORT).show()
-//        }
-//        recyclerView.apply {
-//            layoutManager = LinearLayoutManager(this@MainActivity)
-//            adapter = myAdapter
-//        }
-//
-//        // Set up infinite scrolling using Paging
-//        lifecycleScope.launch {
-//            viewModel.pagingData.collectLatest { pagingData ->
-//                myAdapter.submitData(pagingData)
-//            }
-//        }
-//    }
-
-    private fun hideMainActivityUI() {
-        val networkStatusTextView: TextView = findViewById(R.id.networkStatusTextView)
-        val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
-
-        // Hide the UI elements
-        networkStatusTextView.visibility = View.GONE
-        searchLayout.visibility = View.GONE
-        recyclerView.visibility = View.GONE
+    private fun observeToastMessages() {
+        viewModel.toastMessage.observe(this) { message ->
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()  // Show Toast message
+        }
     }
 
     private fun setupRecyclerView() {
-        myAdapter = MyAdapter { person -> // Handle item click
-            // Log the person ID for debugging
-            Log.d("MainActivity", "Clicked on: ${person.id}")
+        personListAdapter = PersonListAdapter { person ->
             hideMainActivityUI()
-            // Navigate to DetailFragment and pass the person ID
             val bundle = Bundle().apply {
-                putInt("person_id", person.id)  // Pass the person's ID to the DetailFragment
+                putInt("person_id", person.id)
             }
             val detailFragment = DetailFragment()
             detailFragment.arguments = bundle
 
-            // Begin the fragment transaction and add DetailFragment
             supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, detailFragment)  // R.id.fragment_container is your container where fragments are placed
-                .addToBackStack(null)  // Add this transaction to the back stack
+                .replace(R.id.fragment_container, detailFragment)
+                .addToBackStack(null)
                 .commit()
         }
 
         recyclerView.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
-            adapter = myAdapter
+            adapter = personListAdapter
         }
 
-        // Set up infinite scrolling using Paging
         lifecycleScope.launch {
             viewModel.pagingData.collectLatest { pagingData ->
-                myAdapter.submitData(pagingData)
+                personListAdapter.submitData(pagingData)
             }
         }
     }
+    private fun hideMainActivityUI() {
+        val networkStatusTextView: TextView = findViewById(R.id.networkStatusTextView)
+        val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
 
-    // Check network connection and show message accordingly
+        networkStatusTextView.visibility = View.GONE
+        searchLayout.visibility = View.GONE
+        recyclerView.visibility = View.GONE
+    }
+
+    private fun restoreMainActivityUI() {
+        searchEditText.visibility = View.VISIBLE
+        searchLayout.visibility = View.VISIBLE
+        recyclerView.visibility = View.VISIBLE
+    }
+
     private fun checkNetworkAndShowMessage() {
         if (isNetworkAvailable(this)) {
             networkStatusTextView.visibility = View.GONE
@@ -130,7 +110,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Check if network is available
     private fun isNetworkAvailable(context: Context): Boolean {
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -140,12 +119,11 @@ class MainActivity : AppCompatActivity() {
         return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
-    // Set up search button to filter data
     private fun setupSearch() {
         searchEditText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 val query = s.toString()
-                viewModel.setSearchQuery(query)  // Update ViewModel with the search query
+                viewModel.setSearchQuery(query)
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -154,32 +132,21 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    // Observe the filtered data from ViewModel
     private fun observeData() {
         lifecycleScope.launch {
             viewModel.filteredPeople.collectLatest { filteredPeople ->
-                myAdapter.submitData(filteredPeople) // Update RecyclerView with filtered list
+                personListAdapter.submitData(filteredPeople)
             }
         }
     }
-    private fun restoreMainActivityUI() {
-//        networkStatusTextView.visibility = View.VISIBLE
-        searchEditText.visibility = View.VISIBLE
-        searchLayout.visibility = View.VISIBLE
-        recyclerView.visibility = View.VISIBLE
-    }
+
     override fun onResume() {
         super.onResume()
-        // You can add code here to refresh the activity or check network status
         restoreMainActivityUI()
 
-    // for example, to check the network again
     }
     override fun onBackPressed() {
-        // Call the parent method to handle back press
         super.onBackPressed()
-
-        // Restore the UI elements when navigating back
         restoreMainActivityUI()
     }
 
